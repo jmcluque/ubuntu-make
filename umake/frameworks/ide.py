@@ -924,6 +924,39 @@ class SublimeText(umake.frameworks.baseinstaller.BaseInstaller):
                         categories="Development;TextEditor;"))
 
 
+class RStudio(umake.frameworks.baseinstaller.BaseInstaller):
+
+    def __init__(self, category):
+        super().__init__(name="RStudio", description=_("A set of integrated tools designed to help you be more productive with R"),
+                         category=category, only_on_archs=['i386', 'amd64'],
+                         download_page="https://www.rstudio.com/products/rstudio/download/",
+                         desktop_filename="rstudio.desktop",
+                         required_files_path=["rstudio"],
+                         dir_to_decompress_in_tarball="rstudio_*")
+
+    arch_trans = {
+        "amd64": "x64",
+        "i386": "x32"
+    }
+
+    def parse_download_link(self, line, in_download):
+        """Parse RStudio download links"""
+        url = None
+        if '.tar.gz' in line:
+            p = re.search(r'href="([^<]*{}debian.tar.gz)"'.format(self.arch_trans[get_current_arch()]), line)
+            with suppress(AttributeError):
+                url = p.group(1)
+        return ((url, None), in_download)
+
+    def post_install(self):
+        """Create the RStudio Code launcher"""
+        create_launcher(self.desktop_filename, get_application_desktop_file(name=_("RStudio"),
+                        icon_path=os.path.join(self.install_path, "Icon", "128x128", "rstudio.png"),
+                        exec=self.exec_path,
+                        comment=_("A set of integrated tools designed to help you be more productive with R"),
+                        categories="Development;TextEditor;"))
+
+                        
 class SpringToolsSuite(umake.frameworks.baseinstaller.BaseInstaller):
     def __init__(self, category):
         super().__init__(name="Spring Tools Suite",
